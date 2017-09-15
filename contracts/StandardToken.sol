@@ -1,6 +1,6 @@
 pragma solidity ^0.4.15;
 
-import './SafeMath.sol';
+import "./SafeMath.sol";
 
 contract ERC20Token {
 

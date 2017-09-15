@@ -1,8 +1,8 @@
 var SafeMath = artifacts.require("./SafeMath.sol");
-var KudosToken = artifacts.require("./KudosToken.sol");
+var FunnyToken = artifacts.require("./FunnyToken.sol");
 
 module.exports = function(deployer) {
   deployer.deploy(SafeMath);
-  deployer.link(SafeMath, KudosToken);
-  deployer.deploy(KudosToken);
+  deployer.link(SafeMath, FunnyToken);
+  deployer.deploy(FunnyToken);
 };
