@@ -4,7 +4,7 @@ import "./SafeMath.sol";
 
 contract ERC20Token {
 
-   uint256 public totalSupply;
+   function totalSupply() constant returns (uint256 totalSupply);
    function balanceOf(address _owner) constant returns (uint256 balance);
    function transfer(address _to, uint256 _value) returns (bool success);
    function transferFrom(address _from, address _to, uint256 _value) returns (bool success);
@@ -25,6 +25,8 @@ contract StandardToken is ERC20Token {
    }
 
    function transfer(address _to, uint256 _value) returns (bool success) {
+      require(_to != address(0));
+
       // SafeMath.sub will throw if there is not enough balance.
       balances[msg.sender] = balances[msg.sender].sub(_value);
       balances[_to] = balances[_to].add(_value);
@@ -33,6 +35,8 @@ contract StandardToken is ERC20Token {
    }
 
    function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
+      require(_to != address(0));
+
       uint256 _allowance = allowed[_from][msg.sender];
       balances[_from] = balances[_from].sub(_value);
       balances[_to] = balances[_to].add(_value);
