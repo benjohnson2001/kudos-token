@@ -1,7 +1,7 @@
 pragma solidity ^0.4.11;
 
-import '../FunnyToken.sol';
-import '../../SafeMath.sol';
+import './FunnyToken.sol';
+import './SafeMath.sol';
 
 /**
  * @title Crowdsale
@@ -55,16 +55,16 @@ contract FunnyTokenCrowdsale {
 
    /**
    * event for token purchase logging
-   * @param purchaser who paid for the tokens
-   * @param beneficiary who got the tokens
-   * @param value weis paid for purchase
-   * @param amount amount of tokens purchased
+   * @param tokenBuyer who paid for the tokens
+   * @param tokenReceiver who got the tokens
+   * @param valueInWei weis paid for purchase
+   * @param amountOfTokens amount of tokens purchased
    */
    event TokenPurchase(address indexed tokenBuyer, address indexed tokenReceiver, uint256 valueInWei, uint256 amountOfTokens);
 
    // low level token purchase function
    function buyTokens(address tokenReceiver) payable {
-      require(beneficiary != 0x0);
+      require(tokenReceiver != 0x0);
       require(validPurchase());
 
       uint256 weiAmount = msg.value;
@@ -99,7 +99,7 @@ contract FunnyTokenCrowdsale {
    // @return true if crowdsale event has ended
    function hasEnded() public constant returns (bool) {
       bool capReached = weiRaised >= cap;
-      bool deadlineHasPassed = now > endTime
+      bool deadlineHasPassed = now > endTime;
       return deadlineHasPassed || capReached;
    }
 }

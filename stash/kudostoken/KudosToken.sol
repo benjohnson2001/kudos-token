@@ -1,6 +1,6 @@
 pragma solidity ^0.4.15;
 
-import "./StandardToken.sol";
+import "../StandardToken.sol";
 
 /**
  * @title Kudos Token
@@ -37,7 +37,4 @@ contract KudosToken is StandardToken {
    uint256 public constant maxTokens = 10 * oneBillion * tokenUnit;
    uint256 public constant maxTokensForSale = 4 * oneBillion * tokenUnit;
 
-   function totalSupply() constant returns (uint256 totalSupply) {
-      return maxTokens;
-   }
 }

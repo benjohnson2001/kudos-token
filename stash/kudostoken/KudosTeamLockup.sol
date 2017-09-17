@@ -1,5 +1,5 @@
 pragma solidity ^0.4.10;
-import './StandardToken.sol';
+import '../StandardToken.sol';
 
 // requires 1.5 billion KUDOS deposited here
 contract KudosTeamLockup {
@@ -9,8 +9,8 @@ contract KudosTeamLockup {
   address public kudosTeamAddress;
   uint256 public constant tokenUnit = 10**18;
 
-  function KudosTeamLockup(address kudosTeamAddress) {
-    kudosTeamAddress = kudosTeamAddress;
+  function KudosTeamLockup(address _kudosTeamAddress) {
+    kudosTeamAddress = _kudosTeamAddress;
     unlockDate = now + 6 * 30 days;
     allocations[0xe0f6EF3D61255d1Bd7ad66987D2fBB3FE5Ee8Ea4] = 16000000;
     allocations[0xCB25966330044310ecD09634ea6B1f4190d5B10D] = 16000000;
@@ -43,10 +43,10 @@ contract KudosTeamLockup {
     allocations[0x2cb8457Adde40aa7298C19Fa94426B94317C2744] = 700000;
   }
 
-  function unlock() external {
-    if(now < unlockDate) throw;
-    uint256 entitled = allocations[msg.sender];
-    allocations[msg.sender] = 0;
-    if(!StandardToken(BAT).transfer(msg.sender, entitled * tokenUnit)) throw;
-  }
+   function unlock() external {
+      if(now < unlockDate) revert();
+      uint256 entitled = allocations[msg.sender];
+      allocations[msg.sender] = 0;
+      if(!StandardToken(BAT).transfer(msg.sender, entitled * tokenUnit)) revert();
+   }
 }
