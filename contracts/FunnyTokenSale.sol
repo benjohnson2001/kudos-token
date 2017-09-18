@@ -9,18 +9,21 @@ contract FunnyTokenSale is Ownable {
 
    FunnyToken public funnyToken;
 
-   uint256 public constant RATE = 2200; // Number of tokens per Ether
-   uint256 public constant capInEther = 15910; // Cap in Ether
-   uint256 public constant startTime = 1504594800; // Sep 5, 2017 @ 08:00 GMT+1
-   uint256 public constant numberOfDays = 7;
-
+   uint256 public constant startTime = 1504594800;
+   uint256 public constant numberOfHours = 1;
+   uint256 public constant ethPriceInDollars = 289;
    address public constant wallet = 0xebC75bC3C8676e4B4edd1E665d09E499BE9B9bDD;
 
    uint256 public constant tokenUnit = 10 ** 18;
+   uint256 public constant oneMillion = 10 ** 6;
    uint256 public constant oneBillion = 10 ** 9;
-   uint256 public constant amountOfTokensForSale = 4 * oneBillion * tokenUnit;
+   uint256 public constant initialAmountOfTokensForSale = 4 * oneBillion * tokenUnit;
 
-   uint256 public totalWeiRaised = 0;
+   uint256 public constant goalInDollars = 30 * oneMillion;
+   uint256 public constant kutoasPerDollar = initialAmountOfTokensForSale/goalInDollars;
+
+   uint256 public constant weiPerDollar = uint256(1 ether) / ethPriceInDollars;
+   uint256 public constant kutoasPerWei = kutoasPerDollar / weiPerDollar;
 
    function FunnyTokenSale(address _tokenContractAddress) {
       require(_tokenContractAddress != 0);
@@ -38,15 +41,10 @@ contract FunnyTokenSale is Ownable {
 
    function tokenSaleIsActive() constant returns (bool) {
       return (
-         tokenSaleContractHasBeenFunded() &&
          itIsAfterTokenSaleStartTime() &&
          itIsBeforeTokenSaleEndTime() &&
          goalHasNotBeenReached()
       );
-   }
-
-   function tokenSaleContractHasBeenFunded() constant returns (bool) {
-      return tokensAvailable() == amountOfTokensForSale;
    }
 
    function itIsAfterTokenSaleStartTime() constant returns (bool) {
@@ -54,13 +52,12 @@ contract FunnyTokenSale is Ownable {
    }
 
    function itIsBeforeTokenSaleEndTime() constant returns (bool) {
-      return (now <= startTime.add(numberOfDays * 1 days));
+      return (now <= startTime.add(numberOfHours * 1 hours));
    }
 
    function goalHasNotBeenReached() constant returns (bool) {
-      return (totalWeiRaised < capInEther * 1 ether);
+      return (tokensAvailable() > 0);
    }
-
 
    function () payable {
       issueTokens();
@@ -70,22 +67,37 @@ contract FunnyTokenSale is Ownable {
 
    function issueTokens() payable whenTokenSaleIsActive {
 
-      uint256 weiAmount = msg.value;
-      require(weiAmount > 0);
+      require(msg.value > 0);
 
-      // calculate amount of tokens to sell
-      uint256 kudosAmount = weiAmount.mul(RATE);
+      uint256 weiLeftInSale = tokensAvailable().div(kutoasPerWei);
+      uint256 weiAmount = SafeMath.min256(msg.value, weiLeftInSale);
 
-      IssueTokens(msg.sender, kudosAmount);
+      // transfer wei to wallet
+      wallet.transfer(weiAmount);
 
-      // increment raised amount
-      totalWeiRaised = totalWeiRaised.add(msg.value);
+      // issue tokens and send to buyer
+      uint256 tokensToIssue = getNumberOfTokensToIssue(weiAmount);
+      funnyToken.transfer(msg.sender, tokensToIssue);
+      IssueTokens(msg.sender, tokensToIssue);
 
-      // send KUDOS to buyer
-      funnyToken.transfer(msg.sender, kudosAmount);
+      // partial refund if full participation not possible due to cap being reached.
+      uint256 refund = msg.value.sub(weiAmount);
+      if (refund > 0) {
+          msg.sender.transfer(refund);
+      }
+   }
 
-      // send ETH to wallet
-      wallet.transfer(msg.value);
+   function getNumberOfTokensToIssue(uint256 weiAmount) internal constant returns (uint256) {
+
+      uint256 numberOfTokensToIssue = weiAmount.mul(kutoasPerWei);
+
+      // if purchase would cause less than kutoasPerWei tokens left so nobody could ever buy them,
+      // then gift them to the last buyer.
+      if (tokensAvailable().sub(numberOfTokensToIssue) < kutoasPerWei) {
+          numberOfTokensToIssue = tokensAvailable();
+      }
+
+      return numberOfTokensToIssue;
    }
 
    function endTokenSale() onlyOwner {
