@@ -4,10 +4,12 @@ import "./SafeMath.sol";
 import './KudosToken.sol';
 
 /**
-* @title KudosTokenLockup
-* @dev KudosTokenLockup is a token holder contract that will allow a
-* beneficiary to extract the tokens after a year
-*/
+ * @title KudosTokenLockup
+ * @author Ben Johnson
+ *
+ * @dev KudosTokenLockup is a token holder contract that will allow a beneficiary to extract the tokens after a year
+ * @dev Based on TokenTimelock by OpenZeppelin: https://github.com/OpenZeppelin/zeppelin-solidity
+ */
 contract KudosTokenLockup {
    using SafeMath for uint256;
 
@@ -22,7 +24,7 @@ contract KudosTokenLockup {
    function KudosTokenLockup(address _tokenContractAddress, address _beneficiary) {
       require(_tokenContractAddress != address(0));
       require(_beneficiary != address(0));
-      releaseTime = now.add(10 minutes);
+      releaseTime = now.add(1 years);
       kudosToken = KudosToken(_tokenContractAddress);
       beneficiary = _beneficiary;
    }

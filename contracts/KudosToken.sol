@@ -6,6 +6,8 @@ import "./TokenHolder.sol";
 
 /**
  * @title Kudos Token
+ * @author Ben Johnson
+ *
  * @dev ERC20 Kudos Token (KUDOS)
  *
  * Kudos tokens are displayed using 18 decimal places of precision.

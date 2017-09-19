@@ -1,5 +1,11 @@
 pragma solidity ^0.4.15;
 
+/**
+ * @title ERC20 interface
+ *
+ * @dev https://github.com/ethereum/EIPs/issues/20
+ * @dev https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md
+ */
 contract ERC20Token {
 
    uint256 public totalSupply;

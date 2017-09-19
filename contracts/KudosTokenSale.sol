@@ -4,6 +4,14 @@ import "./Ownable.sol";
 import "./SafeMath.sol";
 import "./KudosToken.sol";
 
+/**
+ * @title KudosTokenSale
+ * @author Ben Johnson
+ *
+ * @dev KudosTokenSale is a token crowdsale contract
+ * @dev Based on KinTokenSale contract: https://github.com/codeaudit/kin-token
+ * @dev Based on WildCryptoICO's Crowdsale contract: https://github.com/WildCryptoICO/Wild-Crypto-Token
+ */
 contract KudosTokenSale is Ownable {
    using SafeMath for uint256;
 
@@ -35,27 +43,27 @@ contract KudosTokenSale is Ownable {
    }
 
    modifier whenTokenSaleIsActive() {
-      require(tokenSaleIsActive());
+      require(isActive());
       _;
    }
 
-   function tokenSaleIsActive() constant returns (bool) {
+   function isActive() constant returns (bool) {
       return (
-         itIsAfterStartTime() &&
-         itIsBeforeEndTime() &&
-         tokensAreStillAvailable()
+         isAfterStartTime() &&
+         isBeforeEndTime() &&
+         tokensAreAvailable()
       );
    }
 
-   function itIsAfterStartTime() constant returns (bool) {
+   function isAfterStartTime() constant returns (bool) {
       return now >= startTime;
    }
 
-   function itIsBeforeEndTime() constant returns (bool) {
+   function isBeforeEndTime() constant returns (bool) {
       return now <= startTime.add(numberOfDays * 1 days);
    }
 
-   function tokensAreStillAvailable() constant returns (bool) {
+   function tokensAreAvailable() constant returns (bool) {
       return tokensAvailable() > 0;
    }
 
