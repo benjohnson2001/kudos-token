@@ -14,15 +14,16 @@ contract KudosTokenLockup {
    KudosToken kudosToken;
 
    // beneficiary of tokens after they are released
-   address beneficiary;
+   address public beneficiary;
 
    // timestamp when token release is enabled
    uint256 public releaseTime;
 
    function KudosTokenLockup(address _tokenContractAddress, address _beneficiary) {
-      require(_releaseTime > now);
-      releaseTime = now.add(1 year);
-      kudosToken = _KudosToken(_tokenContractAddress);
+      require(_tokenContractAddress != address(0));
+      require(_beneficiary != address(0));
+      releaseTime = now.add(10 minutes);
+      kudosToken = KudosToken(_tokenContractAddress);
       beneficiary = _beneficiary;
    }
 
@@ -32,9 +33,13 @@ contract KudosTokenLockup {
    function release() {
       require(now >= releaseTime);
 
-      uint256 amount = kudosToken.balanceOf(this);
-      require(amount > 0);
+      uint256 balance = kudosToken.balanceOf(this);
+      require(balance > 0);
 
-      assert(kudosToken.transfer(beneficiary, amount));
+      assert(kudosToken.transfer(beneficiary, balance));
+   }
+
+   function fundsAreAvailable() constant returns (bool) {
+      return now >= releaseTime;
    }
 }

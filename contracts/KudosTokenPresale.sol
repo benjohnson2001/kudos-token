@@ -3,8 +3,9 @@ pragma solidity ^0.4.15;
 import "./Ownable.sol";
 import "./SafeMath.sol";
 import "./KudosToken.sol";
+import './KudosTokenLockup.sol';
 
-contract KudosTokenSale is Ownable {
+contract KudosTokenPresale is Ownable {
    using SafeMath for uint256;
 
    KudosToken public kudosToken;
@@ -17,15 +18,15 @@ contract KudosTokenSale is Ownable {
    uint256 public constant tokenUnit = 10 ** 18;
    uint256 public constant oneMillion = 10 ** 6;
    uint256 public constant oneBillion = 10 ** 9;
-   uint256 public constant amountOfTokensForSale = 4 * oneBillion * tokenUnit;
+   uint256 public constant amountOfTokensForSale = 1733333333333333000000000000;
 
-   uint256 public constant goalInDollars = 30 * oneMillion;
+   uint256 public constant goalInDollars = 10 * oneMillion;
    uint256 public constant kutoasPerDollar = amountOfTokensForSale/goalInDollars;
 
    uint256 public constant weiPerDollar = uint256(1 ether) / ethPriceInDollars;
    uint256 public constant kutoasPerWei = kutoasPerDollar / weiPerDollar;
 
-   function KudosTokenSale(address _tokenContractAddress) {
+   function KudosTokenPresale(address _tokenContractAddress) {
       require(_tokenContractAddress != address(0));
       kudosToken = KudosToken(_tokenContractAddress);
    }
@@ -63,7 +64,7 @@ contract KudosTokenSale is Ownable {
       issueTokens();
    }
 
-   event IssueTokens(address indexed to, uint256 value);
+   event LogTokensForLockup(address indexed to, uint256 value);
 
    function issueTokens() payable whenTokenSaleIsActive {
 
@@ -75,10 +76,10 @@ contract KudosTokenSale is Ownable {
       // transfer wei to wallet
       owner.transfer(weiAmount);
 
-      // issue tokens and send to buyer
+      // issue tokens and send back to owner, so they can be manually entered into KudosTokenLockup
       uint256 tokensToIssue = getNumberOfTokensToIssue(weiAmount);
-      assert(kudosToken.transfer(msg.sender, tokensToIssue));
-      IssueTokens(msg.sender, tokensToIssue);
+      assert(kudosToken.transfer(owner, tokensToIssue));
+      LogTokensForLockup(msg.sender, tokensToIssue);
 
       // partial refund if full participation not possible due to cap being reached.
       uint256 refund = msg.value.sub(weiAmount);
