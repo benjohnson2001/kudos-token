@@ -9,7 +9,7 @@ import "./KudosToken.sol";
  * @author Ben Johnson
  *
  * @dev KudosTokenSale is a token crowdsale contract
- * @dev Based on KinTokenSale contract: https://github.com/codeaudit/kin-token
+ * @dev Based on KinTokenSale contract: https://github.com/kikinteractive/kin-token
  * @dev Based on WildCryptoICO's Crowdsale contract: https://github.com/WildCryptoICO/Wild-Crypto-Token
  */
 contract KudosTokenSale is Ownable {
