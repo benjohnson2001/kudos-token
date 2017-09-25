@@ -1,6 +1,6 @@
 import expectRevert from './helpers/expectRevert';
 
-const StandardTokenMock = artifacts.require('./helpers/StandardTokenMock.sol');
+const StandardTokenMock = artifacts.require('StandardTokenMock');
 
 contract('StandardTokenTests2', (accounts) => {
     let token;

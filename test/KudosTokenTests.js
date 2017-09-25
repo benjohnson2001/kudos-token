@@ -1,4 +1,4 @@
-var KudosToken = artifacts.require("./KudosToken.sol");
+const KudosToken = artifacts.require("KudosToken");
 
 contract('KudosToken', function(accounts) {
   it("the token contract should put 10000000000.000000000000000000 Kudos tokens in the owner account", function() {

@@ -1,5 +1,5 @@
 import expectRevert from './helpers/expectRevert';
-const SafeMathMock = artifacts.require('./helpers/SafeMathMock.sol');
+const SafeMathMock = artifacts.require('SafeMathMock');
 
 contract('SafeMathTests1', (accounts) => {
     let safeMath;

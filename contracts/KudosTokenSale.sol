@@ -17,7 +17,7 @@ contract KudosTokenSale is Ownable {
 
    KudosToken public kudosToken;
 
-   uint256 public constant startTime = 1505736000;
+   uint256 public constant startTime = 1508331600;
    uint256 public constant numberOfDays = 7;
    uint256 public constant ethPriceInDollars = 287;
    /*address public constant wallet = 0x079f698415567dCA44A4cF8A2DD38FAf757776a7;*/
@@ -99,7 +99,7 @@ contract KudosTokenSale is Ownable {
 
       uint256 numberOfTokensToIssue = weiAmount.mul(kutoasPerWei);
 
-      // if purchase would cause less than kutoasPerWei tokens left then nobody could ever buy them,
+      // if purchase would cause less kutoasPerWei tokens left available that nobody could ever buy them,
       // then gift them to the last buyer.
       if (tokensAvailable().sub(numberOfTokensToIssue) < kutoasPerWei) {
          numberOfTokensToIssue = tokensAvailable();

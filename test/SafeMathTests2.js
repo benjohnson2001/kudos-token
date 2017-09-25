@@ -1,5 +1,5 @@
 const assertJump = require('./helpers/assertJump');
-var SafeMathMock = artifacts.require("./helpers/SafeMathMock.sol");
+const SafeMathMock = artifacts.require("SafeMathMock");
 
 contract('SafeMathTests2', function(accounts) {
 

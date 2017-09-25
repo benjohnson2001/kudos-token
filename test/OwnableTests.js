@@ -1,7 +1,7 @@
 'use strict';
 const assertJump = require('./helpers/assertJump');
 
-var Ownable = artifacts.require('../contracts/ownership/Ownable.sol');
+const Ownable = artifacts.require('Ownable');
 
 contract('OwnableTests', function(accounts) {
   let ownable;
