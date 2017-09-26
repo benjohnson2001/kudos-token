@@ -16,7 +16,7 @@ const should = require('chai')
 const KudosToken = artifacts.require('KudosToken');
 const KudosTokenSale = artifacts.require('KudosTokenSale');
 
-contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
+contract('KudosTokenSaleTest2', function ([deployer, wallet, purchaser]) {
 
    var now;
    var startTime;
@@ -25,7 +25,6 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
 
    var token;
    var tokenSale;
-   var owner;
 
    const value = ether(42);
 
@@ -77,7 +76,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
       it('should not allow to initialize with 0 token contract address', async () => {
          await expectRevert(KudosTokenSale.new(wallet, now + 100, 0));
       });
-      
+
       it('should be ownable', async () => {
          let sale = await KudosTokenSale.new(wallet, now + 10000, token.address);
          assert.equal(await sale.owner(), deployer);

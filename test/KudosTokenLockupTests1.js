@@ -12,7 +12,7 @@ import {increaseTimeTo, duration} from './helpers/increaseTime'
 const KudosToken = artifacts.require('KudosToken')
 const KudosTokenLockup = artifacts.require('KudosTokenLockup')
 
-contract('KudosTokenLockupTests', function ([_, owner, beneficiary]) {
+contract('KudosTokenLockupTests1', function ([_, owner, beneficiary]) {
 
   const amount = new BigNumber(100)
 

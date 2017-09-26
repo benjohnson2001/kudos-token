@@ -62,7 +62,7 @@ contract StandardToken is ERC20Token {
    /**
     * @dev approve the passed address to spend the specified amount of tokens
     * @dev Note that the approved value must first be set to zero in order for it to be changed
-    * @dev   https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+    * @dev https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
     * @param _spender The address that will spend the funds
     * @param _value The amount of tokens to be spent
     * @return bool A successful approval returns true

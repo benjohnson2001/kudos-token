@@ -257,6 +257,14 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          totalSupply.should.be.bignumber.equal(expectedTotalSupply);
       })
 
+      it('should be not be less than 1 wei', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         await tokenSale.sendTransaction({value: 0, from: purchaser}).should.be.rejectedWith(EVMThrow);
+      })
+
       it('should assign tokens to sender', async function () {
 
          await fundContract();
@@ -326,6 +334,14 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          totalSupply.should.be.bignumber.equal(expectedTotalSupply);
       })
 
+      it('should be not be less than 1 wei', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         await tokenSale.issueTokens({value: 0, from: purchaser}).should.be.rejectedWith(EVMThrow);
+      })
+
       it('should assign tokens to sender', async function () {
 
          await fundContract();
@@ -363,7 +379,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          await tokenSale.endTokenSale()
 
          var balance = await token.balanceOf(deployer);
-         balance.should.be.bignumber.equal(totalSupply-(kutoasPerWei*value))
+         balance.should.be.bignumber.equal(totalSupply-(kutoasPerWei*value));
       })
 
       it('should no longer be active', async function () {
@@ -387,6 +403,12 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          tokenSaleIsActive.should.equal(false);
 
          await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+      })
+
+      it('should only be called when there are tokens available', async function () {
+
+         await increaseTimeTo(startTime);
+         await tokenSale.endTokenSale().should.be.rejectedWith(EVMThrow);
       })
    })
 
