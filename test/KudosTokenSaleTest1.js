@@ -389,4 +389,50 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
       })
    })
+
+   it('should gift the last purchaser with remaining kutoas if there are less kutoas available than can be purchased with 1 wei', async function () {
+
+      await token.transfer(tokenSale.address, kutoasPerWei+(kutoasPerWei/2));
+      await increaseTimeTo(startTime);
+
+      var tokenSaleIsActive = await tokenSale.isActive();
+      tokenSaleIsActive.should.equal(true);
+
+      var tokensAvailable = await tokenSale.tokensAvailable();
+      tokensAvailable.should.be.bignumber.equal(kutoasPerWei+(kutoasPerWei/2));
+
+      var tokensAreAvailable = await tokenSale.tokensAreAvailable();
+      tokensAreAvailable.should.equal(true);
+
+      await tokenSale.sendTransaction({value: 1, from: purchaser})
+
+      var tokensAvailable = await tokenSale.tokensAvailable();
+      tokensAvailable.should.be.bignumber.equal(0);
+
+      var tokensAreAvailable = await tokenSale.tokensAreAvailable();
+      tokensAreAvailable.should.equal(false);
+
+      var tokenSaleIsActive = await tokenSale.isActive();
+      tokenSaleIsActive.should.equal(false);
+
+      let balance = await token.balanceOf(purchaser);
+      balance.should.be.bignumber.equal(kutoasPerWei+(kutoasPerWei/2))
+   })
+
+   it('should refund the last purchaser if they send too much ether', async function () {
+
+      await token.transfer(tokenSale.address, kutoasPerWei*10);
+      await increaseTimeTo(startTime);
+
+      const preEtherBalance = web3.eth.getBalance(wallet);
+      const preTokenBalance = await token.balanceOf(purchaser);
+      await tokenSale.sendTransaction({value: 20, from: purchaser})
+      const postEtherBalance = web3.eth.getBalance(wallet);
+      const postTokenBalance = await token.balanceOf(purchaser);
+
+      preTokenBalance.should.be.bignumber.equal(0);
+      postTokenBalance.should.be.bignumber.equal(kutoasPerWei*10);
+
+      postEtherBalance.minus(preEtherBalance).should.be.bignumber.equal(10);
+   })
 })
