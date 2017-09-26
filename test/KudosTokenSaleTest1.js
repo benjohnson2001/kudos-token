@@ -15,15 +15,28 @@ const should = require('chai')
 const KudosToken = artifacts.require('KudosToken');
 const KudosTokenSale = artifacts.require('KudosTokenSale');
 
-contract('KudosTokenSaleTest1', function () {
+contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
 
    var startTime;
    var endTime;
    var afterEndTime;
 
    var token;
-   var crowdsale;
-   var owner;
+   var tokenSale;
+
+   const value = ether(42);
+
+   const ethPriceInDollars = 287;
+   const tokenUnit = 10 ** 18;
+   const oneMillion = 10 ** 6;
+   const oneBillion = 10 ** 9;
+   const amountOfTokensForSale = 4 * oneBillion * tokenUnit;
+
+   const goalInDollars = 30 * oneMillion;
+   const kutoasPerDollar = amountOfTokensForSale/goalInDollars;
+
+   const weiPerDollar = tokenUnit / ethPriceInDollars;
+   const kutoasPerWei = parseInt(kutoasPerDollar / weiPerDollar);
 
    before(async function() {
      //Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
@@ -37,123 +50,343 @@ contract('KudosTokenSaleTest1', function () {
       afterEndTime = endTime + duration.seconds(1)
 
       token = await KudosToken.new();
-      crowdsale = await KudosTokenSale.new(startTime, token.address);
-      owner = await token.owner();
+      tokenSale = await KudosTokenSale.new(wallet, startTime, token.address);
    })
 
-   it('funded crowdsale: tokensAreAvailable should return true', async function () {
+   async function fundContract() {
+      var amountOfTokensForSale = await tokenSale.amountOfTokensForSale();
+      await token.transfer(tokenSale.address, amountOfTokensForSale);
+   }
 
-      var amountOfTokensForSale = await crowdsale.amountOfTokensForSale();
-      token.transfer(crowdsale.address, amountOfTokensForSale);
+   describe('funded tokenSale', function () {
 
-      var tokensAreAvailable = await crowdsale.tokensAreAvailable();
-      tokensAreAvailable.should.equal(true);
+      it('tokens should be available', async function () {
+
+         await fundContract();
+
+         var tokensAreAvailable = await tokenSale.tokensAreAvailable();
+         tokensAreAvailable.should.equal(true);
+      })
+
+      it('should not be active before start', async function () {
+
+         await fundContract();
+
+         var isAfterStartTime = await tokenSale.isAfterStartTime();
+         isAfterStartTime.should.equal(false);
+
+         var isBeforeEndTime = await tokenSale.isBeforeEndTime();
+         isBeforeEndTime.should.equal(true);
+
+         var tokenSaleIsActive = await tokenSale.isActive();
+         tokenSaleIsActive.should.equal(false);
+      })
+
+      it('should be active after start and before end', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         var isAfterStartTime = await tokenSale.isAfterStartTime();
+         isAfterStartTime.should.equal(true);
+
+         var isBeforeEndTime = await tokenSale.isBeforeEndTime();
+         isBeforeEndTime.should.equal(true);
+
+         var tokenSaleIsActive = await tokenSale.isActive();
+         tokenSaleIsActive.should.equal(true);
+      })
+
+      it('should not be active after end', async function () {
+
+         await fundContract();
+         await increaseTimeTo(afterEndTime);
+
+         var isAfterStartTime = await tokenSale.isAfterStartTime();
+         isAfterStartTime.should.equal(true);
+
+         var isBeforeEndTime = await tokenSale.isBeforeEndTime();
+         isBeforeEndTime.should.equal(false);
+
+         var tokenSaleIsActive = await tokenSale.isActive();
+         tokenSaleIsActive.should.equal(false);
+      })
+
+      it('should reject payments before start', async function () {
+
+         await fundContract();
+
+         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.issueTokens({from: purchaser, value: value}).should.be.rejectedWith(EVMThrow);
+      })
+
+      it('should accept payments after start and before end', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.fulfilled;
+         await tokenSale.issueTokens({value: value, from: purchaser}).should.be.fulfilled;
+      })
+
+      it('should reject payments after end', async function () {
+
+         await fundContract();
+         await increaseTimeTo(afterEndTime);
+
+         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.issueTokens({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+      })
    })
 
-   it('funded crowdsale: should not be active before the start time', async function () {
+   describe('unfunded tokenSale', function () {
 
-      var amountOfTokensForSale = await crowdsale.amountOfTokensForSale();
-      token.transfer(crowdsale.address, amountOfTokensForSale);
+      it('tokens should not be available', async function () {
 
-      var isAfterStartTime = await crowdsale.isAfterStartTime();
-      isAfterStartTime.should.equal(false);
+         var tokensAreAvailable = await tokenSale.tokensAreAvailable();
+         tokensAreAvailable.should.equal(false);
+      })
 
-      var isBeforeEndTime = await crowdsale.isBeforeEndTime();
-      isBeforeEndTime.should.equal(true);
+      it('should not be active before start', async function () {
 
-      var crowdsaleIsActive = await crowdsale.isActive();
-      crowdsaleIsActive.should.equal(false);
+         var isAfterStartTime = await tokenSale.isAfterStartTime();
+         isAfterStartTime.should.equal(false);
+
+         var isBeforeEndTime = await tokenSale.isBeforeEndTime();
+         isBeforeEndTime.should.equal(true);
+
+         var tokenSaleIsActive = await tokenSale.isActive();
+         tokenSaleIsActive.should.equal(false);
+      })
+
+      it('should not be active after start and before end', async function () {
+
+         await increaseTimeTo(startTime);
+
+         var isAfterStartTime = await tokenSale.isAfterStartTime();
+         isAfterStartTime.should.equal(true);
+
+         var isBeforeEndTime = await tokenSale.isBeforeEndTime();
+         isBeforeEndTime.should.equal(true);
+
+         var tokenSaleIsActive = await tokenSale.isActive();
+         tokenSaleIsActive.should.equal(false);
+      })
+
+      it('should not be active after end', async function () {
+
+         await increaseTimeTo(afterEndTime);
+
+         var isAfterStartTime = await tokenSale.isAfterStartTime();
+         isAfterStartTime.should.equal(true);
+
+         var isBeforeEndTime = await tokenSale.isBeforeEndTime();
+         isBeforeEndTime.should.equal(false);
+
+         var tokenSaleIsActive = await tokenSale.isActive();
+         tokenSaleIsActive.should.equal(false);
+      })
+
+      it('should reject payments before start', async function () {
+
+         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.issueTokens({from: purchaser, value: value}).should.be.rejectedWith(EVMThrow);
+      })
+
+      it('should reject payments after start and before end', async function () {
+
+         await increaseTimeTo(startTime);
+
+         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.issueTokens({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+      })
+
+      it('should reject payments after end', async function () {
+
+         await increaseTimeTo(afterEndTime);
+
+         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.issueTokens({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+      })
    })
 
-   it('funded crowdsale: should be active after the start time and before the end time', async function () {
+   describe('purchase through fallback function', function () {
 
-      var amountOfTokensForSale = await crowdsale.amountOfTokensForSale();
-      token.transfer(crowdsale.address, amountOfTokensForSale);
+      it('should be logged', async function () {
 
-      // https://github.com/ethereumjs/testrpc/issues/336
-      await crowdsale.isBeforeEndTime();
-      await increaseTimeTo(startTime);
-      await crowdsale.isBeforeEndTime();
+         await fundContract();
+         await increaseTimeTo(startTime);
 
-      var isAfterStartTime = await crowdsale.isAfterStartTime();
-      isAfterStartTime.should.equal(true);
+         const {logs} = await tokenSale.sendTransaction({value: value, from: purchaser});
 
-      var isBeforeEndTime = await crowdsale.isBeforeEndTime();
-      isBeforeEndTime.should.equal(true);
+         const event = logs.find(e => e.event === 'IssueTokens');
 
-      var crowdsaleIsActive = await crowdsale.isActive();
-      crowdsaleIsActive.should.equal(true);
+         should.exist(event);
+         event.args.to.should.equal(purchaser);
+         event.args.ethValue.should.be.bignumber.equal(value);
+         event.args.amountOfTokens.should.be.bignumber.equal(kutoasPerWei*value);
+      })
+
+      it('should decrease the number of tokens available for sale', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         var tokensAvailable = await tokenSale.tokensAvailable();
+         tokensAvailable.should.be.bignumber.equal(amountOfTokensForSale);
+
+         await tokenSale.sendTransaction({value: value, from: purchaser})
+
+         var tokensAvailable = await tokenSale.tokensAvailable();
+         var tokensLeft = amountOfTokensForSale-(kutoasPerWei*value);
+         tokensAvailable.should.be.bignumber.equal(tokensLeft);
+      })
+
+      it('should not affect the total supply', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         var totalSupply = await token.totalSupply();
+         var expectedTotalSupply = 10*oneBillion*tokenUnit;
+         totalSupply.should.be.bignumber.equal(expectedTotalSupply);
+
+         await tokenSale.sendTransaction({value: value, from: purchaser})
+
+         var totalSupply = await token.totalSupply();
+         totalSupply.should.be.bignumber.equal(expectedTotalSupply);
+      })
+
+      it('should assign tokens to sender', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         await tokenSale.sendTransaction({value: value, from: purchaser})
+         let balance = await token.balanceOf(purchaser);
+         balance.should.be.bignumber.equal(kutoasPerWei*value)
+      })
+
+      it('should forward funds to wallet', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         const pre = web3.eth.getBalance(wallet)
+         await tokenSale.sendTransaction({value: value, from: purchaser})
+         const post = web3.eth.getBalance(wallet)
+         post.minus(pre).should.be.bignumber.equal(value)
+      })
    })
 
-   it('funded crowdsale: should not be active after the end time', async function () {
+   describe('purchase through explicit function call', function () {
 
-      var amountOfTokensForSale = await crowdsale.amountOfTokensForSale();
-      token.transfer(crowdsale.address, amountOfTokensForSale);
+      it('should be logged', async function () {
 
-      // https://github.com/ethereumjs/testrpc/issues/336
-      await crowdsale.isBeforeEndTime();
-      await increaseTimeTo(afterEndTime);
-      await crowdsale.isBeforeEndTime();
+         await fundContract();
+         await increaseTimeTo(startTime);
 
-      var isAfterStartTime = await crowdsale.isAfterStartTime();
-      isAfterStartTime.should.equal(true);
+         const {logs} = await tokenSale.issueTokens({value: value, from: purchaser})
 
-      var isBeforeEndTime = await crowdsale.isBeforeEndTime();
-      isBeforeEndTime.should.equal(false);
+         const event = logs.find(e => e.event === 'IssueTokens');
 
-      var crowdsaleIsActive = await crowdsale.isActive();
-      crowdsaleIsActive.should.equal(false);
+         should.exist(event);
+         event.args.to.should.equal(purchaser);
+         event.args.ethValue.should.be.bignumber.equal(value);
+         event.args.amountOfTokens.should.be.bignumber.equal(kutoasPerWei*value);
+      })
+
+      it('should decrease the number of tokens available for sale', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         var tokensAvailable = await tokenSale.tokensAvailable();
+         tokensAvailable.should.be.bignumber.equal(amountOfTokensForSale);
+
+         await tokenSale.issueTokens({value: value, from: purchaser})
+
+         var tokensAvailable = await tokenSale.tokensAvailable();
+         var tokensLeft = amountOfTokensForSale-(kutoasPerWei*value);
+         tokensAvailable.should.be.bignumber.equal(tokensLeft);
+      })
+
+      it('should not affect the total supply', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         var totalSupply = await token.totalSupply();
+         var expectedTotalSupply = 10*oneBillion*tokenUnit;
+         totalSupply.should.be.bignumber.equal(expectedTotalSupply);
+
+         await tokenSale.issueTokens({value: value, from: purchaser})
+
+         var totalSupply = await token.totalSupply();
+         totalSupply.should.be.bignumber.equal(expectedTotalSupply);
+      })
+
+      it('should assign tokens to sender', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         await tokenSale.issueTokens({value: value, from: purchaser})
+         let balance = await token.balanceOf(purchaser);
+         balance.should.be.bignumber.equal(kutoasPerWei*value)
+      })
+
+      it('should forward funds to wallet', async function () {
+
+         await fundContract();
+         await increaseTimeTo(startTime);
+
+         const pre = web3.eth.getBalance(wallet)
+         await tokenSale.issueTokens({value: value, from: purchaser})
+         const post = web3.eth.getBalance(wallet)
+         post.minus(pre).should.be.bignumber.equal(value)
+      })
    })
 
-   it('unfunded crowdsale: tokensAreAvailable should return false', async function () {
+   describe('token sale that is manually ended', function () {
 
-      var tokensAreAvailable = await crowdsale.tokensAreAvailable();
-      tokensAreAvailable.should.equal(false);
-   })
+      it('should transfer remaining tokens to owner', async function () {
 
-   it('unfunded crowdsale: should not be active before the start time', async function () {
+         await fundContract();
+         await increaseTimeTo(startTime);
 
-      var isAfterStartTime = await crowdsale.isAfterStartTime();
-      isAfterStartTime.should.equal(false);
+         var totalSupply = await token.totalSupply();
+         var balance = await token.balanceOf(deployer);
+         balance.should.be.bignumber.equal(totalSupply-amountOfTokensForSale)
 
-      var isBeforeEndTime = await crowdsale.isBeforeEndTime();
-      isBeforeEndTime.should.equal(true);
+         await tokenSale.sendTransaction({value: value, from: purchaser})
+         await tokenSale.endTokenSale()
 
-      var crowdsaleIsActive = await crowdsale.isActive();
-      crowdsaleIsActive.should.equal(false);
-   })
+         var balance = await token.balanceOf(deployer);
+         balance.should.be.bignumber.equal(totalSupply-(kutoasPerWei*value))
+      })
 
-   it('unfunded crowdsale: should not be active after the start time and before the end time', async function () {
+      it('should no longer be active', async function () {
 
-      // https://github.com/ethereumjs/testrpc/issues/336
-      await crowdsale.isBeforeEndTime();
-      await increaseTimeTo(startTime);
-      await crowdsale.isBeforeEndTime();
+         await fundContract();
+         await increaseTimeTo(startTime);
 
-      var isAfterStartTime = await crowdsale.isAfterStartTime();
-      isAfterStartTime.should.equal(true);
+         var tokensAreAvailable = await tokenSale.tokensAreAvailable();
+         tokensAreAvailable.should.equal(true);
 
-      var isBeforeEndTime = await crowdsale.isBeforeEndTime();
-      isBeforeEndTime.should.equal(true);
+         var tokenSaleIsActive = await tokenSale.isActive();
+         tokenSaleIsActive.should.equal(true);
 
-      var crowdsaleIsActive = await crowdsale.isActive();
-      crowdsaleIsActive.should.equal(false);
-   })
+         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.fulfilled;
+         await tokenSale.endTokenSale()
 
-   it('unfunded crowdsale: should not be active after the end time', async function () {
+         var tokensAreAvailable = await tokenSale.tokensAreAvailable();
+         tokensAreAvailable.should.equal(false);
 
-      // https://github.com/ethereumjs/testrpc/issues/336
-      await crowdsale.isBeforeEndTime();
-      await increaseTimeTo(afterEndTime);
-      await crowdsale.isBeforeEndTime();
+         var tokenSaleIsActive = await tokenSale.isActive();
+         tokenSaleIsActive.should.equal(false);
 
-      var isAfterStartTime = await crowdsale.isAfterStartTime();
-      isAfterStartTime.should.equal(true);
-
-      var isBeforeEndTime = await crowdsale.isBeforeEndTime();
-      isBeforeEndTime.should.equal(false);
-
-      var crowdsaleIsActive = await crowdsale.isActive();
-      crowdsaleIsActive.should.equal(false);
+         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+      })
    })
 })

@@ -10,7 +10,9 @@ export default async (promise) => {
         // jump" event).
         const outOfGas = error.message.search('out of gas') > -1;
 
-        assert(invalidOpcode || outOfGas, `Expected throw, got ${error} instead`);
+        const typeError = error.message.search('Cannot convert undefined or null to object') > -1;
+
+        assert(invalidOpcode || outOfGas || typeError, `Expected throw, got ${error} instead`);
 
         return;
     }

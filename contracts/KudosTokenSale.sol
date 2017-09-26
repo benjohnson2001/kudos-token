@@ -20,7 +20,7 @@ contract KudosTokenSale is Ownable {
    uint256 public startTime;
    uint256 public constant numberOfDays = 7;
    uint256 public constant ethPriceInDollars = 287;
-   /*address public constant wallet = 0x079f698415567dCA44A4cF8A2DD38FAf757776a7;*/
+   address public wallet;
 
    uint256 public constant tokenUnit = 10 ** 18;
    uint256 public constant oneMillion = 10 ** 6;
@@ -33,9 +33,13 @@ contract KudosTokenSale is Ownable {
    uint256 public constant weiPerDollar = uint256(1 ether) / ethPriceInDollars;
    uint256 public constant kutoasPerWei = kutoasPerDollar / weiPerDollar;
 
-   function KudosTokenSale(uint256 _startTime, address _tokenContractAddress) {
+   function KudosTokenSale(address _wallet, uint256 _startTime, address _tokenContractAddress) {
+
+      require(_wallet != address(0));
       require(_startTime >= now);
       require(_tokenContractAddress != address(0));
+
+      wallet = _wallet;
       startTime = _startTime;
       kudosToken = KudosToken(_tokenContractAddress);
    }
@@ -73,7 +77,7 @@ contract KudosTokenSale is Ownable {
       issueTokens();
    }
 
-   event IssueTokens(address indexed to, uint256 value);
+   event IssueTokens(address indexed to, uint256 ethValue, uint256 amountOfTokens);
 
    function issueTokens() payable whenTokenSaleIsActive {
 
@@ -83,12 +87,12 @@ contract KudosTokenSale is Ownable {
       uint256 weiAmount = SafeMath.min256(msg.value, weiLeftInSale);
 
       // transfer wei to wallet
-      owner.transfer(weiAmount);
+      wallet.transfer(weiAmount);
 
       // issue tokens and send to buyer
       uint256 tokensToIssue = getNumberOfTokensToIssue(weiAmount);
       assert(kudosToken.transfer(msg.sender, tokensToIssue));
-      IssueTokens(msg.sender, tokensToIssue);
+      IssueTokens(msg.sender, msg.value, tokensToIssue);
 
       // partial refund if full participation not possible due to cap being reached.
       uint256 refund = msg.value.sub(weiAmount);
