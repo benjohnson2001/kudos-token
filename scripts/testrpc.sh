@@ -3,7 +3,7 @@
 port=8545
 
 # Import common variables.
-. ./dev/kudos-token/scripts/common.sh
+. scripts/common.sh
 
 if testrpc_running $port; then
   echo "Using existing testrpc instance"
