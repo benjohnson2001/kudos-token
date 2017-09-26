@@ -17,7 +17,7 @@ contract KudosTokenSale is Ownable {
 
    KudosToken public kudosToken;
 
-   uint256 public constant startTime = 1508331600;
+   uint256 public startTime;
    uint256 public constant numberOfDays = 7;
    uint256 public constant ethPriceInDollars = 287;
    /*address public constant wallet = 0x079f698415567dCA44A4cF8A2DD38FAf757776a7;*/
@@ -33,8 +33,10 @@ contract KudosTokenSale is Ownable {
    uint256 public constant weiPerDollar = uint256(1 ether) / ethPriceInDollars;
    uint256 public constant kutoasPerWei = kutoasPerDollar / weiPerDollar;
 
-   function KudosTokenSale(address _tokenContractAddress) {
+   function KudosTokenSale(uint256 _startTime, address _tokenContractAddress) {
+      require(_startTime >= now);
       require(_tokenContractAddress != address(0));
+      startTime = _startTime;
       kudosToken = KudosToken(_tokenContractAddress);
    }
 

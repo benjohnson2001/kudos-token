@@ -56,14 +56,12 @@ contract('KudosTokenLockupTests', function ([_, owner, beneficiary]) {
 
   it('fundsAreAvailable should return false before the time limit', async function () {
      const result = await this.timelock.fundsAreAvailable()
-     const expectedResult = false
-     assert.equal(result, expectedResult, "fundsAreAvailable should return false before the time limit")
+     result.should.equal(false)
   })
 
   it('fundsAreAvailable should return true after the time limit', async function () {
      await increaseTimeTo(this.releaseTime + duration.seconds(1))
      const result = await this.timelock.fundsAreAvailable()
-     const expectedResult = true
-     assert.equal(result, expectedResult, "fundsAreAvailable should return true after the time limit")
+     result.should.equal(true)
   })
 })

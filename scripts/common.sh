@@ -1,12 +1,12 @@
 
 # A helper script that contains predefined accounts, their balance and helper funcs.
-# Usage in scripts: 
+# Usage in scripts:
 #. scripts/common.sh
 
 
-# We define 10 accounts with balance 10B ether, needed for high-value tests.
+# We define 10 accounts with balance 100B ether, needed for high-value tests.
 
-balance=10000000000000000000000000000
+balance=100000000000000000000000000000
 
 acc=( \
     0x11c98b8fa69354b26b5db98148a5bc4ef2ebae8187f651b82409f6cefc9bb0b8 \
@@ -74,7 +74,7 @@ done
 
 # Helper funcs.
 
-# Test if testrpc is running on port $1. 
+# Test if testrpc is running on port $1.
 # Result is in $?
 testrpc_running() {
   nc -z localhost $1

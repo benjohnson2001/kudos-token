@@ -19,5 +19,8 @@
   "homepage": "https://bitbucket.org/benjohnson2001/kudos-token#readme",
   "devDependencies": {
     "solidity-coverage": "^0.2.4"
+  },
+  "dependencies": {
+    "chai-bignumber": "^2.0.1"
   }
 }

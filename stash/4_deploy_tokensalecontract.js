@@ -4,5 +4,5 @@ var KudosTokenSale = artifacts.require("./KudosTokenSale.sol");
 module.exports = function(deployer) {
    deployer.deploy(SafeMath);
    deployer.link(SafeMath, KudosTokenSale);
-   deployer.deploy(KudosTokenSale, '0x54dd06274f927b722dc0a5578bc5f55f62f700f6');
+   deployer.deploy(KudosTokenSale, 1508331600, '0x54dd06274f927b722dc0a5578bc5f55f62f700f6');
 };
