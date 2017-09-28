@@ -20,7 +20,7 @@ module.exports = {
          port: 8545,
          network_id: 4,
          // from: "0x4F3Da41D2adb81e8e3A808E865b55c68f163b81A", // primary testnet account
-         from: "0x8550b1cc5914909d75c12708b92049ab78b52ffe", // ledger wallet
+         from: "0xE702Ee34e8E4749F5cAB4AF574E458693dfC9575", // ledger wallet
          gas: 4612388
       },
       production: {

@@ -12,13 +12,13 @@ import "./KudosToken.sol";
  * @dev Based on KinTokenSale contract: https://github.com/kikinteractive/kin-token
  * @dev Based on WildCryptoICO's Crowdsale contract: https://github.com/WildCryptoICO/Wild-Crypto-Token
  */
-contract KudosTokenSale is Ownable {
+contract KudosTokenSale is Ownable, TokenHolder {
    using SafeMath for uint256;
 
    KudosToken public kudosToken;
 
    uint256 public startTime;
-   uint256 public constant numberOfDays = 7;
+   uint256 public constant numberOfDays = 30;
    uint256 public constant ethPriceInDollars = 287;
    address public wallet;
 

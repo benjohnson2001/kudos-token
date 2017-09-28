@@ -24,7 +24,6 @@ contract('KudosTokenSaleTest2', function ([deployer, wallet, purchaser]) {
    var afterEndTime;
 
    var token;
-   var tokenSale;
 
    const value = ether(42);
 
