@@ -94,7 +94,7 @@ contract KudosTokenSale is Ownable, TokenHolder {
       assert(kudosToken.transfer(msg.sender, amountOfTokens));
       IssueTokens(msg.sender, weiValue, amountOfTokens);
 
-      // partial refund if full participation not possible due to cap being reached.
+      // partial refund if full participation not possible due to cap being reached
       uint256 refund = msg.value.sub(weiValue);
 
       if (refund > 0) {

@@ -6,7 +6,7 @@ module.exports = function(deployer) {
    deployer.link(SafeMath, KudosTokenLockup);
 
    var tokenContractAddress = '';
-   var beneficiary = '0x4F3Da41D2adb81e8e3A808E865b55c68f163b81A';
+   var beneficiary = '';
 
    deployer.deploy(KudosTokenLockup, tokenContractAddress, beneficiary);
 };
