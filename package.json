@@ -5,7 +5,7 @@
   "main": "truffle.js",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.org/KudosProject/kudos-token.git"
+    "url": "git+ssh://git@github.com:KudosProject/kudos-token.git"
   },
   "keywords": [
     "solidity",
