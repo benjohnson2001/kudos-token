@@ -77,36 +77,34 @@ contract KudosTokenSale is Ownable, TokenHolder {
       issueTokens();
    }
 
-   event IssueTokens(address indexed to, uint256 ethValue, uint256 amountOfTokens);
+   event IssueTokens(address indexed to, uint256 weiValue, uint256 amountOfTokens);
 
    function issueTokens() payable whenTokenSaleIsActive {
 
       require(msg.value > 0);
 
       uint256 weiLeftInSale = tokensAvailable().div(kutoasPerWei);
-      uint256 weiAmount = SafeMath.min256(msg.value, weiLeftInSale);
+      uint256 weiValue = SafeMath.min256(msg.value, weiLeftInSale);
 
       // transfer wei to wallet
-      wallet.transfer(weiAmount);
+      wallet.transfer(weiValue);
 
       // issue tokens and send to buyer
-      uint256 amountOfTokens = getNumberOfTokensToIssue(weiAmount);
+      uint256 amountOfTokens = getNumberOfTokensToIssue(weiValue);
       assert(kudosToken.transfer(msg.sender, amountOfTokens));
+      IssueTokens(msg.sender, weiValue, amountOfTokens);
 
       // partial refund if full participation not possible due to cap being reached.
-      uint256 refund = msg.value.sub(weiAmount);
-
-      uint256 ethValue = msg.value-refund;
-      IssueTokens(msg.sender, ethValue, amountOfTokens);
+      uint256 refund = msg.value.sub(weiValue);
 
       if (refund > 0) {
           msg.sender.transfer(refund);
       }
    }
 
-   function getNumberOfTokensToIssue(uint256 weiAmount) internal constant returns (uint256) {
+   function getNumberOfTokensToIssue(uint256 weiValue) internal constant returns (uint256) {
 
-      uint256 numberOfTokensToIssue = weiAmount.mul(kutoasPerWei);
+      uint256 numberOfTokensToIssue = weiValue.mul(kutoasPerWei);
 
       // if purchase would cause less kutoasPerWei tokens left available that nobody could ever buy them,
       // then gift them to the last buyer.

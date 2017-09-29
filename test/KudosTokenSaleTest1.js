@@ -223,7 +223,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
 
          should.exist(event);
          event.args.to.should.equal(purchaser);
-         event.args.ethValue.should.be.bignumber.equal(value);
+         event.args.weiValue.should.be.bignumber.equal(value);
          event.args.amountOfTokens.should.be.bignumber.equal(kutoasPerWei*value);
       })
 
@@ -300,7 +300,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
 
          should.exist(event);
          event.args.to.should.equal(purchaser);
-         event.args.ethValue.should.be.bignumber.equal(value);
+         event.args.weiValue.should.be.bignumber.equal(value);
          event.args.amountOfTokens.should.be.bignumber.equal(kutoasPerWei*value);
       })
 
