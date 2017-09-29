@@ -26,7 +26,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
 
    const value = ether(42);
 
-   const ethPriceInDollars = 287;
+   const ethPriceInDollars = 300;
    const tokenUnit = 10 ** 18;
    const oneMillion = 10 ** 6;
    const oneBillion = 10 ** 9;
@@ -46,7 +46,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
    beforeEach(async function() {
 
       startTime = latestTime() + duration.weeks(1);
-      endTime = startTime + duration.days(7);
+      endTime = startTime + duration.days(30);
       afterEndTime = endTime + duration.seconds(1)
 
       token = await KudosToken.new();

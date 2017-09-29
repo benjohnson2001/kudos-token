@@ -19,7 +19,7 @@ contract KudosTokenSale is Ownable, TokenHolder {
 
    uint256 public startTime;
    uint256 public constant numberOfDays = 30;
-   uint256 public constant ethPriceInDollars = 287;
+   uint256 public constant ethPriceInDollars = 300;
    address public wallet;
 
    uint256 public constant tokenUnit = 10 ** 18;
