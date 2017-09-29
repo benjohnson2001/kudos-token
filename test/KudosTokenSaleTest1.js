@@ -26,17 +26,17 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
 
    const value = ether(42);
 
-   const ethPriceInDollars = 300;
-   const tokenUnit = 10 ** 18;
-   const oneMillion = 10 ** 6;
-   const oneBillion = 10 ** 9;
-   const amountOfTokensForSale = 4 * oneBillion * tokenUnit;
+   const ethPriceInDollars = new BigNumber(300);
+   const tokenUnit = new BigNumber(10 ** 18);
+   const oneMillion = new BigNumber(10 ** 6);
+   const oneBillion = new BigNumber(10 ** 9);
+   const amountOfTokensForSale = new BigNumber(4).mul(oneBillion).mul(tokenUnit);
 
-   const goalInDollars = 30 * oneMillion;
-   const kutoasPerDollar = amountOfTokensForSale/goalInDollars;
+   const goalInDollars = new BigNumber(30).mul(oneMillion);
+   const kutoasPerDollar = amountOfTokensForSale.div(goalInDollars);
 
-   const weiPerDollar = tokenUnit / ethPriceInDollars;
-   const kutoasPerWei = parseInt(kutoasPerDollar / weiPerDollar);
+   const weiPerDollar = tokenUnit.div(ethPriceInDollars);
+   const kutoasPerWei = kutoasPerDollar.div(weiPerDollar);
 
    before(async function() {
      //Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
@@ -414,14 +414,16 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
 
    it('should gift the last purchaser with remaining kutoas if there are less kutoas available than can be purchased with 1 wei', async function () {
 
-      await token.transfer(tokenSale.address, kutoasPerWei+(kutoasPerWei/2));
+      const smallValue = kutoasPerWei.add(kutoasPerWei.div(2));
+
+      await token.transfer(tokenSale.address, smallValue);
       await increaseTimeTo(startTime);
 
       var tokenSaleIsActive = await tokenSale.isActive();
       tokenSaleIsActive.should.equal(true);
 
       var tokensAvailable = await tokenSale.tokensAvailable();
-      tokensAvailable.should.be.bignumber.equal(kutoasPerWei+(kutoasPerWei/2));
+      tokensAvailable.should.be.bignumber.equal(smallValue);
 
       var tokensAreAvailable = await tokenSale.tokensAreAvailable();
       tokensAreAvailable.should.equal(true);
@@ -438,7 +440,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
       tokenSaleIsActive.should.equal(false);
 
       let balance = await token.balanceOf(purchaser);
-      balance.should.be.bignumber.equal(kutoasPerWei+(kutoasPerWei/2))
+      balance.should.be.bignumber.equal(smallValue)
    })
 
    it('should refund the last purchaser if they send too much ether', async function () {
