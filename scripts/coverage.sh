@@ -10,6 +10,8 @@ trap cleanup EXIT
 
 if testrpc_running $port; then
   echo "Using existing testrpc-sc instance"
+  eval ./node_modules/.bin/testrpc-sc --port $port --gasLimit 0xfffffffffff "$accounts" -u 0 -u 1 > /dev/null &
+  testrpc_pid=$!
 else
   echo "Starting testrpc-sc to generate coverage"
   eval ./node_modules/.bin/testrpc-sc --port $port --gasLimit 0xfffffffffff "$accounts" -u 0 -u 1 > /dev/null &

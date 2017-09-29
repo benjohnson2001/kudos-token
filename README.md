@@ -1,4 +1,4 @@
-# Kudos Token Contracts
+# [Kudos][kudos] Token Contracts
 
 ![Kudos](kudos.jpg)
 
@@ -6,7 +6,7 @@ Kudos is a rewards and performance driven currency built on top of the [Ethereum
 
 The Kudos token contracts are written in [Solidity][solidity] and tested using [Truffle][truffle] and [testrpc][testrpc].
 
-### Dependencies
+## Dependencies
 
 ```bash
 # Install Truffle and testrpc packages globally:
@@ -16,7 +16,7 @@ $ npm install -g truffle ethereumjs-testrpc
 $ npm install
 ```
 
-### Test
+## Test
 
 ```bash
 # Initialize a testrpc instance
@@ -26,7 +26,16 @@ $ ./scripts/testrpc.sh
 $ truffle test
 ```
 
-[kin token]: https://kin.kik.com
+### Generate Code Coverage Report
+
+```bash
+# run code coverage tool
+$ ./scripts/coverage.sh
+
+# view report at ./coverage/index.html
+```
+
+[kudos]: https://www.kudosproject.com/
 [ethereum]: https://www.ethereum.org/
 
 [solidity]: https://solidity.readthedocs.io/en/develop/
