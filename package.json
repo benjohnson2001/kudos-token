@@ -1,22 +1,23 @@
 {
   "name": "kudos-token",
   "version": "1.0.0",
-  "description": "",
+  "description": "Kudos ERC20 token contracts https://www.kudosproject.com/",
   "main": "truffle.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/benjohnson2001/kudos-token.git"
+    "url": "git+ssh://git@github.org/KudosProject/kudos-token.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "homepage": "https://bitbucket.org/benjohnson2001/kudos-token#readme",
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "smart",
+    "contracts",
+    "security",
+    "kudos"
+  ],
+  "author": "Ben Johnson",
+  "license": "MIT",
+  "homepage": "https://github.com/KudosProject/kudos-token#readme",
   "devDependencies": {
     "solidity-coverage": "^0.2.4"
   },
