@@ -29,7 +29,7 @@ $ truffle test
 ### Generate Code Coverage Report
 
 ```bash
-# run code coverage tool
+# run solidity-coverage tool
 $ ./scripts/coverage.sh
 
 # view report at ./coverage/index.html
