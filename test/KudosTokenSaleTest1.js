@@ -117,7 +117,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          await fundContract();
 
          await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
-         await tokenSale.issueTokens({from: purchaser, value: value}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.buyTokens({from: purchaser, value: value}).should.be.rejectedWith(EVMThrow);
       })
 
       it('should accept payments after start and before end', async function () {
@@ -126,7 +126,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          await increaseTimeTo(startTime);
 
          await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.fulfilled;
-         await tokenSale.issueTokens({value: value, from: purchaser}).should.be.fulfilled;
+         await tokenSale.buyTokens({value: value, from: purchaser}).should.be.fulfilled;
       })
 
       it('should reject payments after end', async function () {
@@ -135,7 +135,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          await increaseTimeTo(afterEndTime);
 
          await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
-         await tokenSale.issueTokens({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.buyTokens({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
       })
    })
 
@@ -190,7 +190,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
       it('should reject payments before start', async function () {
 
          await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
-         await tokenSale.issueTokens({from: purchaser, value: value}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.buyTokens({from: purchaser, value: value}).should.be.rejectedWith(EVMThrow);
       })
 
       it('should reject payments after start and before end', async function () {
@@ -198,7 +198,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          await increaseTimeTo(startTime);
 
          await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
-         await tokenSale.issueTokens({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.buyTokens({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
       })
 
       it('should reject payments after end', async function () {
@@ -206,7 +206,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          await increaseTimeTo(afterEndTime);
 
          await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
-         await tokenSale.issueTokens({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.buyTokens({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
       })
    })
 
@@ -294,7 +294,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          await fundContract();
          await increaseTimeTo(startTime);
 
-         const {logs} = await tokenSale.issueTokens({value: value, from: purchaser})
+         const {logs} = await tokenSale.buyTokens({value: value, from: purchaser})
 
          const event = logs.find(e => e.event === 'IssueTokens');
 
@@ -312,7 +312,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          var tokensAvailable = await tokenSale.tokensAvailable();
          tokensAvailable.should.be.bignumber.equal(amountOfTokensForSale);
 
-         await tokenSale.issueTokens({value: value, from: purchaser})
+         await tokenSale.buyTokens({value: value, from: purchaser})
 
          var tokensAvailable = await tokenSale.tokensAvailable();
          var tokensLeft = amountOfTokensForSale-(kutoasPerWei*value);
@@ -328,7 +328,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          var expectedTotalSupply = 10*oneBillion*tokenUnit;
          totalSupply.should.be.bignumber.equal(expectedTotalSupply);
 
-         await tokenSale.issueTokens({value: value, from: purchaser})
+         await tokenSale.buyTokens({value: value, from: purchaser})
 
          var totalSupply = await token.totalSupply();
          totalSupply.should.be.bignumber.equal(expectedTotalSupply);
@@ -339,7 +339,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          await fundContract();
          await increaseTimeTo(startTime);
 
-         await tokenSale.issueTokens({value: 0, from: purchaser}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.buyTokens({value: 0, from: purchaser}).should.be.rejectedWith(EVMThrow);
       })
 
       it('should assign tokens to sender', async function () {
@@ -347,7 +347,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          await fundContract();
          await increaseTimeTo(startTime);
 
-         await tokenSale.issueTokens({value: value, from: purchaser})
+         await tokenSale.buyTokens({value: value, from: purchaser})
          let balance = await token.balanceOf(purchaser);
          balance.should.be.bignumber.equal(kutoasPerWei*value)
       })
@@ -358,7 +358,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
          await increaseTimeTo(startTime);
 
          const pre = web3.eth.getBalance(wallet)
-         await tokenSale.issueTokens({value: value, from: purchaser})
+         await tokenSale.buyTokens({value: value, from: purchaser})
          const post = web3.eth.getBalance(wallet)
          post.minus(pre).should.be.bignumber.equal(value)
       })

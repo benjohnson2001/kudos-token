@@ -74,12 +74,12 @@ contract KudosTokenSale is Ownable, TokenHolder {
    }
 
    function () payable {
-      issueTokens();
+      buyTokens();
    }
 
    event IssueTokens(address indexed to, uint256 weiValue, uint256 amountOfTokens);
 
-   function issueTokens() payable whenTokenSaleIsActive {
+   function buyTokens() payable whenTokenSaleIsActive {
 
       require(msg.value > 0);
 
