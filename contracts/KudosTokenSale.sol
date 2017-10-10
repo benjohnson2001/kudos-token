@@ -86,20 +86,19 @@ contract KudosTokenSale is Ownable, TokenHolder {
       uint256 weiLeftInSale = tokensAvailable().div(kutoasPerWei);
       uint256 weiValue = SafeMath.min256(msg.value, weiLeftInSale);
 
-      // transfer wei to wallet
-      wallet.transfer(weiValue);
+      transferWeiToWallet(weiValue);
+      issueTokensToBuyer(weiValue);
+      issueRefundIfNecessary(weiValue);
+   }
 
-      // issue tokens and send to buyer
+   function transferWeiToWallet(uint256 weiValue) internal  {
+      wallet.transfer(weiValue);
+   }
+
+   function issueTokensToBuyer(uint256 weiValue) internal  {
       uint256 amountOfTokens = getNumberOfTokensToIssue(weiValue);
       assert(kudosToken.transfer(msg.sender, amountOfTokens));
       IssueTokens(msg.sender, weiValue, amountOfTokens);
-
-      // partial refund if full participation not possible due to cap being reached
-      uint256 refund = msg.value.sub(weiValue);
-
-      if (refund > 0) {
-          msg.sender.transfer(refund);
-      }
    }
 
    function getNumberOfTokensToIssue(uint256 weiValue) internal constant returns (uint256) {
@@ -113,6 +112,16 @@ contract KudosTokenSale is Ownable, TokenHolder {
       }
 
       return numberOfTokensToIssue;
+   }
+
+   function issueRefundIfNecessary(uint256 weiValue) internal  {
+
+      // partial refund if full participation not possible due to cap being reached
+      uint256 refund = msg.value.sub(weiValue);
+
+      if (refund > 0) {
+          msg.sender.transfer(refund);
+      }
    }
 
    function endTokenSale() onlyOwner {
