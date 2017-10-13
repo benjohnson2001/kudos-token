@@ -15,7 +15,7 @@ const should = require('chai')
 const KudosToken = artifacts.require('KudosToken');
 const KudosTokenSale = artifacts.require('KudosTokenSale');
 
-contract('KudosTokenSaleTests3', function ([deployer, wallet, purchaser]) {
+contract('KudosTokenSaleTests3', function ([deployer, wallet, purchaser, otherAddress]) {
 
    var startTime;
    var endTime;
@@ -277,4 +277,58 @@ contract('KudosTokenSaleTests3', function ([deployer, wallet, purchaser]) {
          await tokenSale.endTokenSale().should.be.rejectedWith(EVMThrow);
       })
    })
+
+   it('should not allow non-owner accounts to register users', async function() {
+
+      await tokenSale.registerUsers([purchaser], {from: purchaser}).should.be.rejectedWith(EVMThrow);
+      await tokenSale.registerUsers([otherAddress], {from: purchaser}).should.be.rejectedWith(EVMThrow);
+
+      var purchaserIsRegistered = await tokenSale.registered(purchaser);
+      purchaserIsRegistered.should.equal(false);
+
+      var otherAddressIsRegistered = await tokenSale.registered(otherAddress);
+      otherAddressIsRegistered.should.equal(false);
+   });
+
+   it('should allow owner account to register users', async function() {
+
+      await tokenSale.registerUsers([purchaser], {from: deployer}).should.be.fulfilled;
+      await tokenSale.registerUsers([otherAddress], {from: deployer}).should.be.fulfilled;
+
+      var purchaserIsRegistered = await tokenSale.registered(purchaser);
+      purchaserIsRegistered.should.equal(true);
+
+      var otherAddressIsRegistered = await tokenSale.registered(otherAddress);
+      otherAddressIsRegistered.should.equal(true);
+   });
+
+   it('should not allow non-owner accounts to unregister users', async function() {
+
+      await tokenSale.registerUsers([purchaser], {from: deployer}).should.be.fulfilled;
+      await tokenSale.registerUsers([otherAddress], {from: deployer}).should.be.fulfilled;
+
+      await tokenSale.unregisterUsers([purchaser], {from: purchaser}).should.be.rejectedWith(EVMThrow);
+      await tokenSale.unregisterUsers([otherAddress], {from: purchaser}).should.be.rejectedWith(EVMThrow);
+
+      var purchaserIsRegistered = await tokenSale.registered(purchaser);
+      purchaserIsRegistered.should.equal(true);
+
+      var otherAddressIsRegistered = await tokenSale.registered(otherAddress);
+      otherAddressIsRegistered.should.equal(true);
+   });
+
+   it('should allow owner account to unregister users', async function() {
+
+      await tokenSale.registerUsers([purchaser], {from: deployer}).should.be.fulfilled;
+      await tokenSale.registerUsers([otherAddress], {from: deployer}).should.be.fulfilled;
+
+      await tokenSale.unregisterUsers([purchaser], {from: deployer}).should.be.fulfilled;
+      await tokenSale.unregisterUsers([otherAddress], {from: deployer}).should.be.fulfilled;
+
+      var purchaserIsRegistered = await tokenSale.registered(purchaser);
+      purchaserIsRegistered.should.equal(false);
+
+      var otherAddressIsRegistered = await tokenSale.registered(otherAddress);
+      otherAddressIsRegistered.should.equal(false);
+   });
 })
