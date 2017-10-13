@@ -33,6 +33,8 @@ contract KudosTokenSale is Ownable, TokenHolder {
    uint256 public constant weiPerDollar = tokenUnit / ethPriceInDollars;
    uint256 public constant kutoasPerWei = kutoasPerDollar / weiPerDollar;
 
+   mapping (address => bool) public registered;
+
    function KudosTokenSale(address _wallet, uint256 _startTime, address _tokenContractAddress) {
 
       require(_wallet != address(0));
@@ -73,13 +75,18 @@ contract KudosTokenSale is Ownable, TokenHolder {
       return tokensAvailable() > 0;
    }
 
+   modifier onlyRegistered() {
+      require(registered[msg.sender]);
+      _;
+   }
+
    function () payable {
       buyTokens();
    }
 
    event IssueTokens(address indexed to, uint256 weiValue, uint256 amountOfTokens);
 
-   function buyTokens() payable whenTokenSaleIsActive {
+   function buyTokens() payable whenTokenSaleIsActive onlyRegistered {
 
       require(msg.value > 0);
 
@@ -121,6 +128,18 @@ contract KudosTokenSale is Ownable, TokenHolder {
 
       if (refund > 0) {
           msg.sender.transfer(refund);
+      }
+   }
+
+   function registerUsers(address[] users) external onlyOwner {
+      for (uint i = 0; i < users.length; i++) {
+         registered[users[i]] = true;
+      }
+   }
+
+   function unregisterUsers(address[] users) external onlyOwner {
+      for (uint i = 0; i < users.length; i++) {
+         registered[users[i]] = false;
       }
    }
 

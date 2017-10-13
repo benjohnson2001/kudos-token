@@ -15,7 +15,7 @@ const should = require('chai')
 const KudosToken = artifacts.require('KudosToken');
 const KudosTokenSale = artifacts.require('KudosTokenSale');
 
-contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
+contract('KudosTokenSaleTests1', function ([deployer, wallet, purchaser]) {
 
    var startTime;
    var endTime;
@@ -51,6 +51,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
 
       token = await KudosToken.new();
       tokenSale = await KudosTokenSale.new(wallet, startTime, token.address);
+      await tokenSale.registerUsers([purchaser]);
    })
 
    async function fundContract() {
@@ -58,7 +59,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
       await token.transfer(tokenSale.address, amountOfTokensForSale);
    }
 
-   describe('funded tokenSale', function () {
+   describe('funded tokenSale with registered user', function () {
 
       it('tokens should be available', async function () {
 
@@ -139,7 +140,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
       })
    })
 
-   describe('unfunded tokenSale', function () {
+   describe('unfunded tokenSale with registered user', function () {
 
       it('tokens should not be available', async function () {
 
@@ -210,7 +211,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
       })
    })
 
-   describe('purchase through fallback function', function () {
+   describe('purchase through fallback function with registered user', function () {
 
       it('should be logged', async function () {
 
@@ -287,7 +288,7 @@ contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
       })
    })
 
-   describe('purchase through explicit function call', function () {
+   describe('purchase through explicit function call with registered user', function () {
 
       it('should be logged', async function () {
 
