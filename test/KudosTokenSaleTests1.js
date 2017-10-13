@@ -15,7 +15,7 @@ const should = require('chai')
 const KudosToken = artifacts.require('KudosToken');
 const KudosTokenSale = artifacts.require('KudosTokenSale');
 
-contract('KudosTokenSaleTest1', function ([deployer, wallet, purchaser]) {
+contract('KudosTokenSaleTests1', function ([deployer, wallet, purchaser]) {
 
    var startTime;
    var endTime;
