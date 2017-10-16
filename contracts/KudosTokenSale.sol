@@ -33,6 +33,12 @@ contract KudosTokenSale is Ownable, TokenHolder {
    uint256 public constant weiPerDollar = tokenUnit / ethPriceInDollars;
    uint256 public constant kutoasPerWei = kutoasPerDollar / weiPerDollar;
 
+   uint256 public constant cap = 100000 * weiPerDollar;
+   uint256 public constant maxValue = uint256(-1);
+
+   mapping (address => uint256) public participationHistory;
+   mapping (address => uint256) public participationCaps;
+
    function KudosTokenSale(address _wallet, uint256 _startTime, address _tokenContractAddress) {
 
       require(_wallet != address(0));
@@ -83,12 +89,27 @@ contract KudosTokenSale is Ownable, TokenHolder {
 
       require(msg.value > 0);
 
-      uint256 weiLeftInSale = tokensAvailable().div(kutoasPerWei);
-      uint256 weiValue = SafeMath.min256(msg.value, weiLeftInSale);
+      uint256 weiValue = getWeiValue();
 
       transferWeiToWallet(weiValue);
       issueTokensToBuyer(weiValue);
       issueRefundIfNecessary(weiValue);
+   }
+
+   function getWeiValue() internal constant returns (uint256) {
+
+      // Enforce participation cap (in Wei received).
+      uint256 weiAlreadyParticipated = participationHistory[msg.sender];
+      uint256 participationCap = participationCaps[msg.sender];
+      uint256 cappedWeiReceived = SafeMath.min256(msg.value, participationCap.sub(weiAlreadyParticipated));
+      require(cappedWeiReceived > 0);
+
+      // Accept funds and transfer to funding recipient.
+      uint256 weiLeftInSale = tokensAvailable().div(kutoasPerWei);
+      uint256 weiValue = SafeMath.min256(cappedWeiReceived, weiLeftInSale);
+      participationHistory[msg.sender] = weiAlreadyParticipated.add(weiValue);
+
+      return weiValue;
    }
 
    function transferWeiToWallet(uint256 weiValue) internal  {
@@ -121,6 +142,24 @@ contract KudosTokenSale is Ownable, TokenHolder {
 
       if (refund > 0) {
           msg.sender.transfer(refund);
+      }
+   }
+
+   function registerTier1Users(address[] _users) external onlyOwner {
+      setParticipationCap(_users, cap);
+   }
+
+   function registerTier2Users(address[] _users) external onlyOwner {
+      setParticipationCap(_users, maxValue);
+   }
+
+   function unregisterUsers(address[] _users) external onlyOwner {
+      setParticipationCap(_users, 0);
+   }
+
+   function setParticipationCap(address[] _users, uint256 _cap) private onlyOwner {
+      for (uint i = 0; i < _users.length; i++) {
+         participationCaps[_users[i]] = _cap;
       }
    }
 

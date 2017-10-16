@@ -15,7 +15,7 @@ const should = require('chai')
 const KudosToken = artifacts.require('KudosToken');
 const KudosTokenSale = artifacts.require('KudosTokenSale');
 
-contract('KudosTokenSaleTests1', function ([deployer, wallet, purchaser]) {
+contract('KudosTokenSaleTests3', function ([deployer, wallet, purchaser, otherAddress]) {
 
    var startTime;
    var endTime;
@@ -51,7 +51,6 @@ contract('KudosTokenSaleTests1', function ([deployer, wallet, purchaser]) {
 
       token = await KudosToken.new();
       tokenSale = await KudosTokenSale.new(wallet, startTime, token.address);
-      await tokenSale.registerTier2Users([purchaser]);
    })
 
    async function fundContract() {
@@ -59,7 +58,7 @@ contract('KudosTokenSaleTests1', function ([deployer, wallet, purchaser]) {
       await token.transfer(tokenSale.address, amountOfTokensForSale);
    }
 
-   describe('funded tokenSale', function () {
+   describe('funded tokenSale with unregistered user', function () {
 
       it('tokens should be available', async function () {
 
@@ -121,13 +120,13 @@ contract('KudosTokenSaleTests1', function ([deployer, wallet, purchaser]) {
          await tokenSale.buyTokens({from: purchaser, value: value}).should.be.rejectedWith(EVMThrow);
       })
 
-      it('should accept payments after start and before end', async function () {
+      it('should reject payments after start and before end', async function () {
 
          await fundContract();
          await increaseTimeTo(startTime);
 
-         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.fulfilled;
-         await tokenSale.buyTokens({value: value, from: purchaser}).should.be.fulfilled;
+         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
+         await tokenSale.buyTokens({from: purchaser, value: value}).should.be.rejectedWith(EVMThrow);
       })
 
       it('should reject payments after end', async function () {
@@ -140,7 +139,7 @@ contract('KudosTokenSaleTests1', function ([deployer, wallet, purchaser]) {
       })
    })
 
-   describe('unfunded tokenSale', function () {
+   describe('unfunded tokenSale with unregistered user', function () {
 
       it('tokens should not be available', async function () {
 
@@ -211,157 +210,25 @@ contract('KudosTokenSaleTests1', function ([deployer, wallet, purchaser]) {
       })
    })
 
-   describe('purchase through fallback function', function () {
+   describe('purchase through fallback function with unregistered user', function () {
 
-      it('should be logged', async function () {
-
-         await fundContract();
-         await increaseTimeTo(startTime);
-
-         const {logs} = await tokenSale.sendTransaction({value: value, from: purchaser});
-
-         const event = logs.find(e => e.event === 'IssueTokens');
-
-         should.exist(event);
-         event.args.to.should.equal(purchaser);
-         event.args.weiValue.should.be.bignumber.equal(value);
-         event.args.amountOfTokens.should.be.bignumber.equal(kutoasPerWei*value);
-      })
-
-      it('should decrease the number of tokens available for sale', async function () {
+      it('should be rejected', async function () {
 
          await fundContract();
          await increaseTimeTo(startTime);
 
-         var tokensAvailable = await tokenSale.tokensAvailable();
-         tokensAvailable.should.be.bignumber.equal(amountOfTokensForSale);
-
-         await tokenSale.sendTransaction({value: value, from: purchaser})
-
-         var tokensAvailable = await tokenSale.tokensAvailable();
-         var tokensLeft = amountOfTokensForSale-(kutoasPerWei*value);
-         tokensAvailable.should.be.bignumber.equal(tokensLeft);
-      })
-
-      it('should not affect the total supply', async function () {
-
-         await fundContract();
-         await increaseTimeTo(startTime);
-
-         var totalSupply = await token.totalSupply();
-         var expectedTotalSupply = 10*oneBillion*tokenUnit;
-         totalSupply.should.be.bignumber.equal(expectedTotalSupply);
-
-         await tokenSale.sendTransaction({value: value, from: purchaser})
-
-         var totalSupply = await token.totalSupply();
-         totalSupply.should.be.bignumber.equal(expectedTotalSupply);
-      })
-
-      it('should be not be less than 1 wei', async function () {
-
-         await fundContract();
-         await increaseTimeTo(startTime);
-
-         await tokenSale.sendTransaction({value: 0, from: purchaser}).should.be.rejectedWith(EVMThrow);
-      })
-
-      it('should assign tokens to sender', async function () {
-
-         await fundContract();
-         await increaseTimeTo(startTime);
-
-         await tokenSale.sendTransaction({value: value, from: purchaser})
-         let balance = await token.balanceOf(purchaser);
-         balance.should.be.bignumber.equal(kutoasPerWei*value)
-      })
-
-      it('should forward funds to wallet', async function () {
-
-         await fundContract();
-         await increaseTimeTo(startTime);
-
-         const pre = web3.eth.getBalance(wallet)
-         await tokenSale.sendTransaction({value: value, from: purchaser})
-         const post = web3.eth.getBalance(wallet)
-         post.minus(pre).should.be.bignumber.equal(value)
+         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
       })
    })
 
-   describe('purchase through explicit function call', function () {
+   describe('purchase through explicit function call with unregistered user', function () {
 
-      it('should be logged', async function () {
-
-         await fundContract();
-         await increaseTimeTo(startTime);
-
-         const {logs} = await tokenSale.buyTokens({value: value, from: purchaser})
-
-         const event = logs.find(e => e.event === 'IssueTokens');
-
-         should.exist(event);
-         event.args.to.should.equal(purchaser);
-         event.args.weiValue.should.be.bignumber.equal(value);
-         event.args.amountOfTokens.should.be.bignumber.equal(kutoasPerWei*value);
-      })
-
-      it('should decrease the number of tokens available for sale', async function () {
+      it('should be rejected', async function () {
 
          await fundContract();
          await increaseTimeTo(startTime);
 
-         var tokensAvailable = await tokenSale.tokensAvailable();
-         tokensAvailable.should.be.bignumber.equal(amountOfTokensForSale);
-
-         await tokenSale.buyTokens({value: value, from: purchaser})
-
-         var tokensAvailable = await tokenSale.tokensAvailable();
-         var tokensLeft = amountOfTokensForSale-(kutoasPerWei*value);
-         tokensAvailable.should.be.bignumber.equal(tokensLeft);
-      })
-
-      it('should not affect the total supply', async function () {
-
-         await fundContract();
-         await increaseTimeTo(startTime);
-
-         var totalSupply = await token.totalSupply();
-         var expectedTotalSupply = 10*oneBillion*tokenUnit;
-         totalSupply.should.be.bignumber.equal(expectedTotalSupply);
-
-         await tokenSale.buyTokens({value: value, from: purchaser})
-
-         var totalSupply = await token.totalSupply();
-         totalSupply.should.be.bignumber.equal(expectedTotalSupply);
-      })
-
-      it('should be not be less than 1 wei', async function () {
-
-         await fundContract();
-         await increaseTimeTo(startTime);
-
-         await tokenSale.buyTokens({value: 0, from: purchaser}).should.be.rejectedWith(EVMThrow);
-      })
-
-      it('should assign tokens to sender', async function () {
-
-         await fundContract();
-         await increaseTimeTo(startTime);
-
-         await tokenSale.buyTokens({value: value, from: purchaser})
-         let balance = await token.balanceOf(purchaser);
-         balance.should.be.bignumber.equal(kutoasPerWei*value)
-      })
-
-      it('should forward funds to wallet', async function () {
-
-         await fundContract();
-         await increaseTimeTo(startTime);
-
-         const pre = web3.eth.getBalance(wallet)
-         await tokenSale.buyTokens({value: value, from: purchaser})
-         const post = web3.eth.getBalance(wallet)
-         post.minus(pre).should.be.bignumber.equal(value)
+         await tokenSale.buyTokens({value: value, from: purchaser}).should.be.rejectedWith(EVMThrow);
       })
    })
 
@@ -376,11 +243,10 @@ contract('KudosTokenSaleTests1', function ([deployer, wallet, purchaser]) {
          var balance = await token.balanceOf(deployer);
          balance.should.be.bignumber.equal(totalSupply-amountOfTokensForSale)
 
-         await tokenSale.sendTransaction({value: value, from: purchaser})
          await tokenSale.endTokenSale()
 
          var balance = await token.balanceOf(deployer);
-         balance.should.be.bignumber.equal(totalSupply-(kutoasPerWei*value));
+         balance.should.be.bignumber.equal(totalSupply);
       })
 
       it('should no longer be active', async function () {
@@ -394,7 +260,6 @@ contract('KudosTokenSaleTests1', function ([deployer, wallet, purchaser]) {
          var tokenSaleIsActive = await tokenSale.isActive();
          tokenSaleIsActive.should.equal(true);
 
-         await tokenSale.sendTransaction({value: value, from: purchaser}).should.be.fulfilled;
          await tokenSale.endTokenSale()
 
          var tokensAreAvailable = await tokenSale.tokensAreAvailable();
@@ -413,51 +278,63 @@ contract('KudosTokenSaleTests1', function ([deployer, wallet, purchaser]) {
       })
    })
 
-   it('should gift the last purchaser with remaining kutoas if there are less kutoas available than can be purchased with 1 wei', async function () {
+   it('should not allow non-owner accounts to register users', async function() {
 
-      const smallValue = kutoasPerWei.add(kutoasPerWei.div(2));
+      await tokenSale.registerTier2Users([purchaser], {from: purchaser}).should.be.rejectedWith(EVMThrow);
+      await tokenSale.registerTier2Users([otherAddress], {from: purchaser}).should.be.rejectedWith(EVMThrow);
 
-      await token.transfer(tokenSale.address, smallValue);
-      await increaseTimeTo(startTime);
+      var purchaserIsRegistered = await registered(purchaser);
+      purchaserIsRegistered.should.equal(false);
 
-      var tokenSaleIsActive = await tokenSale.isActive();
-      tokenSaleIsActive.should.equal(true);
+      var otherAddressIsRegistered = await registered(otherAddress);
+      otherAddressIsRegistered.should.equal(false);
+   });
 
-      var tokensAvailable = await tokenSale.tokensAvailable();
-      tokensAvailable.should.be.bignumber.equal(smallValue);
+   it('should allow owner account to register users', async function() {
 
-      var tokensAreAvailable = await tokenSale.tokensAreAvailable();
-      tokensAreAvailable.should.equal(true);
+      await tokenSale.registerTier2Users([purchaser], {from: deployer}).should.be.fulfilled;
+      await tokenSale.registerTier2Users([otherAddress], {from: deployer}).should.be.fulfilled;
 
-      await tokenSale.sendTransaction({value: 1, from: purchaser})
+      var purchaserIsRegistered = await registered(purchaser);
+      purchaserIsRegistered.should.equal(true);
 
-      var tokensAvailable = await tokenSale.tokensAvailable();
-      tokensAvailable.should.be.bignumber.equal(0);
+      var otherAddressIsRegistered = await registered(otherAddress);
+      otherAddressIsRegistered.should.equal(true);
+   });
 
-      var tokensAreAvailable = await tokenSale.tokensAreAvailable();
-      tokensAreAvailable.should.equal(false);
+   it('should not allow non-owner accounts to unregister users', async function() {
 
-      var tokenSaleIsActive = await tokenSale.isActive();
-      tokenSaleIsActive.should.equal(false);
+      await tokenSale.registerTier2Users([purchaser], {from: deployer}).should.be.fulfilled;
+      await tokenSale.registerTier2Users([otherAddress], {from: deployer}).should.be.fulfilled;
 
-      let balance = await token.balanceOf(purchaser);
-      balance.should.be.bignumber.equal(smallValue)
-   })
+      await tokenSale.unregisterUsers([purchaser], {from: purchaser}).should.be.rejectedWith(EVMThrow);
+      await tokenSale.unregisterUsers([otherAddress], {from: purchaser}).should.be.rejectedWith(EVMThrow);
 
-   it('should refund the last purchaser if they send too much ether', async function () {
+      var purchaserIsRegistered = await registered(purchaser);
+      purchaserIsRegistered.should.equal(true);
 
-      await token.transfer(tokenSale.address, kutoasPerWei*10);
-      await increaseTimeTo(startTime);
+      var otherAddressIsRegistered = await registered(otherAddress);
+      otherAddressIsRegistered.should.equal(true);
+   });
 
-      const preEtherBalance = web3.eth.getBalance(wallet);
-      const preTokenBalance = await token.balanceOf(purchaser);
-      await tokenSale.sendTransaction({value: 20, from: purchaser})
-      const postEtherBalance = web3.eth.getBalance(wallet);
-      const postTokenBalance = await token.balanceOf(purchaser);
+   it('should allow owner account to unregister users', async function() {
 
-      preTokenBalance.should.be.bignumber.equal(0);
-      postTokenBalance.should.be.bignumber.equal(kutoasPerWei*10);
+      await tokenSale.registerTier2Users([purchaser], {from: deployer}).should.be.fulfilled;
+      await tokenSale.registerTier2Users([otherAddress], {from: deployer}).should.be.fulfilled;
 
-      postEtherBalance.minus(preEtherBalance).should.be.bignumber.equal(10);
-   })
+      await tokenSale.unregisterUsers([purchaser], {from: deployer}).should.be.fulfilled;
+      await tokenSale.unregisterUsers([otherAddress], {from: deployer}).should.be.fulfilled;
+
+      var purchaserIsRegistered = await registered(purchaser);
+      purchaserIsRegistered.should.equal(false);
+
+      var otherAddressIsRegistered = await registered(otherAddress);
+      otherAddressIsRegistered.should.equal(false);
+   });
+
+   async function registered(userAddress) {
+
+      var cap = await tokenSale.participationCaps(userAddress);
+      return cap > 0;
+   }
 })
