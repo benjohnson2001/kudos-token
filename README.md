@@ -51,8 +51,8 @@ $ ./scripts/coverage.sh
 
 5. fund the crowdsale contract with the Kudos tokens created in step 1, the amount should match the `amountOfTokensForSale` variable in the KudosTokenSale contract
 
-for example, in `truffle console`:
-```solidity
+   for example, in `truffle console`:
+```bash
 > KudosToken.deployed().then(function(instance) { token = instance});
 > KudosTokenSale.deployed().then(function(instance) { sale = instance});
 > token.transfer(sale.address, web3.toWei('4000000000', 'ether'));
