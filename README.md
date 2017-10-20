@@ -49,7 +49,7 @@ $ ./scripts/coverage.sh
 
 4. deploy the KudosTokenSale contract with `truffle deploy`
 
-5. fund the crowdsale contract with the Kudos tokens created in step 1, the amount should match the `amountOfTokensForSale` variable in the KudosTokenSale contract
+5. fund the crowdsale contract with the Kudos tokens created in step 1 (the amount should match the value of the `amountOfTokensForSale` variable in the KudosTokenSale contract)
 
    for example, in `truffle console`:
 ```bash
