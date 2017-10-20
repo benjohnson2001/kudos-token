@@ -61,7 +61,7 @@ contract('KudosTokenSaleTests4', function (accounts) {
       await token.transfer(tokenSale.address, amountOfTokensForSale);
    }
 
-   describe('participation caps', async () => {
+   describe('whitelist tests', async () => {
         let sale;
         let fundRecipient = accounts[5];
 
@@ -151,6 +151,55 @@ contract('KudosTokenSaleTests4', function (accounts) {
                 for (let user of users) {
                    var userCap = (await tokenSale.participationCaps(user)).toNumber();
                    assert.equal(userCap, cap);
+                }
+            });
+        });
+
+        describe('unregisterUsers', async () => {
+            it('should be able to get called with an empty list of users', async () => {
+                await tokenSale.unregisterUsers([]);
+            });
+
+            it('should not allow to be called by non-owner', async () => {
+                let stranger = accounts[7];
+                assert.notEqual(await tokenSale.owner(), stranger);
+
+                await expectRevert(tokenSale.unregisterUsers([], {from: stranger}));
+            });
+
+            it('should remove tier 1 users from whitelist', async () => {
+                let users = [accounts[1], accounts[4]];
+
+                await tokenSale.registerTier1Users(users);
+
+                for (let user of users) {
+                   var userCap = (await tokenSale.participationCaps(user)).toNumber();
+                   assert.equal(userCap, cap);
+                }
+
+                await tokenSale.unregisterUsers(users);
+
+                for (let user of users) {
+                   var userCap = (await tokenSale.participationCaps(user)).toNumber();
+                   assert.equal(userCap, 0);
+                }
+            });
+
+            it('should remove tier 2 users from whitelist', async () => {
+                let users = [accounts[1], accounts[4]];
+
+                await tokenSale.registerTier2Users(users);
+
+                for (let user of users) {
+                   var userCap = (await tokenSale.participationCaps(user)).toNumber();
+                   assert.equal(userCap, maxValue);
+                }
+
+                await tokenSale.unregisterUsers(users);
+
+                for (let user of users) {
+                   var userCap = (await tokenSale.participationCaps(user)).toNumber();
+                   assert.equal(userCap, 0);
                 }
             });
         });
