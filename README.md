@@ -35,6 +35,32 @@ $ ./scripts/coverage.sh
 # view report at ./coverage/index.html
 ```
 
+## launch sequence 🚀
+
+1. deploy the KudosToken contract with `truffle deploy`
+
+2. move the `stash/3_deploy_tokensalecontract.js` migration script to the `migrations` folder
+
+3. in the `migrations/3_deploy_tokensalecontract.js` file:
+
+   - specify the wallet address that will receive ETH in the crowdsale in the `wallet` variable
+
+   - specify the address of the deployed token contract in the `tokenContractAddress` variable
+
+4. deploy the KudosTokenSale contract with `truffle deploy`
+
+5. fund the crowdsale contract with the Kudos tokens created in step 1, the amount should match the `amountOfTokensForSale` variable in the KudosTokenSale contract
+
+for example, in `truffle console`:
+```solidity
+> KudosToken.deployed().then(function(instance) { token = instance});
+> KudosTokenSale.deployed().then(function(instance) { sale = instance});
+> token.transfer(sale.address, web3.toWei('4000000000', 'ether'));
+```
+
+6. whitelist users for each tier with the `registerTier1Users` and `registerTier2Users` functions, remove users from the whitelist with the `unregisterUsers` function
+
+
 [kudos]: https://www.kudosproject.com/
 [ethereum]: https://www.ethereum.org/
 
