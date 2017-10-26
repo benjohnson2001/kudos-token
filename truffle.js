@@ -26,7 +26,10 @@ module.exports = {
       production: {
          host: "localhost",
          port: 8545,
-         network_id: 1
+         network_id: 1,
+         from: "0x2FD3A13853161e19098437F8c61a5bB8FcE117f9", // ledger wallet
+         gas: 4612388,
+         gasPrice: 8000000000
       }
    }
 };

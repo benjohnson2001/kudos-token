@@ -2,7 +2,7 @@ const createKeccakHash = require('keccak')
 
 function toChecksumAddress () {
 
-  var address = '0x78f02311e1cdbfd01fcfd13745c90b87eec252c2'
+  var address = '0xb8e861e1e1c8155831bc5f1026a18c645bc59754'
 
   address = address.toLowerCase().replace('0x','');
   var hash = createKeccakHash('keccak256').update(address).digest('hex')
